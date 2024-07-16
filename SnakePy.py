@@ -1,6 +1,8 @@
+import os
 import pygame as pg
 import time as tm
 import random as rd
+import sys
 
 # Configuración del juego
 snake_speed = 15
@@ -20,15 +22,18 @@ pg.display.set_caption('SnakePy')
 # Ocultar el cursor del mouse
 pg.mouse.set_visible(False)
 
+# Directorio base
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Cargar sonidos
-menu_sound = pg.mixer.Sound('menu_sound.mp3')
-game_sound = pg.mixer.Sound('game_sound.mp3')
-game_over_sound = pg.mixer.Sound('game_over_sound.mp3')
-eat_sound = pg.mixer.Sound('eat_sound.mp3')
-score_sound = pg.mixer.Sound('score_sound.mp3')
+menu_sound = pg.mixer.Sound(os.path.join(base_dir, 'music', 'menu_sound.mp3'))
+game_sound = pg.mixer.Sound(os.path.join(base_dir, 'music', 'game_sound.mp3'))
+game_over_sound = pg.mixer.Sound(os.path.join(base_dir, 'music', 'game_over_sound.mp3'))
+eat_sound = pg.mixer.Sound(os.path.join(base_dir, 'music', 'eat_sound.mp3'))
+score_sound = pg.mixer.Sound(os.path.join(base_dir, 'music', 'score_sound.mp3'))
 
 # Cargar y establecer el icono
-icon = pg.image.load('Icon_SnakePy.png')
+icon = pg.image.load(os.path.join(base_dir, 'images', 'Icon_SnakePy.png'))
 pg.display.set_icon(icon)
 
 game_window = pg.display.set_mode((window_x, window_y))
@@ -83,7 +88,7 @@ def show_menu():
     instruction_rect = instruction_surface.get_rect(center=(window_x / 2, window_y / 1.5))
 
     version_font = pg.font.SysFont('times new roman', 20)
-    version_surface = version_font.render('Version 1.1.1', True, white)
+    version_surface = version_font.render('Version 1.1.2', True, white)
     version_rect = version_surface.get_rect(bottomleft=(10, window_y - 10))
 
     author_surface = version_font.render('by Hector Aliaga', True, white)
@@ -142,7 +147,7 @@ def wait_for_input():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
-                quit()
+                sys.exit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_c:
                     stop_sound(menu_sound)  # Detener música del menú
@@ -151,7 +156,7 @@ def wait_for_input():
                     pg.display.flip()
                 elif event.key == pg.K_q:
                     pg.quit()
-                    quit()
+                    sys.exit()
 
 # Bucle principal del juego
 def main():
@@ -252,4 +257,4 @@ def main():
 if __name__ == "__main__":
     main()
     pg.quit()
-    quit()
+    sys.exit()
