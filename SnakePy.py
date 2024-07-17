@@ -6,21 +6,20 @@ import sys
 
 # Configuración del juego
 snake_speed = 15
-window_x = 1366
-window_y = 768
-black = pg.Color(0, 0, 18)
+
+# Definición de colores
+bluish_black = pg.Color(0, 0, 18)
 white = pg.Color(255, 255, 255)
 red = pg.Color(255, 0, 0)
 green = pg.Color(0, 255, 0)
 blue = pg.Color(0, 0, 255)
 yellow = pg.Color(255, 255, 0)
-
+ 
 # Inicialización de Pygame
 pg.init()
 pg.display.set_caption('SnakePy')
-
-# Ocultar el cursor del mouse
-pg.mouse.set_visible(False)
+pg.event.set_grab(True)  # Capturar el cursor del ratón dentro de la ventana del juego
+pg.mouse.set_visible(False)  # Ocultar el cursor del mouse
 
 # Directorio base
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -36,7 +35,10 @@ score_sound = pg.mixer.Sound(os.path.join(base_dir, 'music', 'score_sound.mp3'))
 icon = pg.image.load(os.path.join(base_dir, 'images', 'Icon_SnakePy.png'))
 pg.display.set_icon(icon)
 
-game_window = pg.display.set_mode((window_x, window_y))
+# Configuración de la ventana del juego y reloj
+info = pg.display.Info()
+window_x, window_y = info.current_w, info.current_h
+game_window = pg.display.set_mode((window_x, window_y), pg.FULLSCREEN)
 fps = pg.time.Clock()
 
 # Variables del juego
@@ -46,35 +48,44 @@ start_time = 0
 elapsed_time = 0
 
 def show_score(color, font, size):
+    """Mostrar la puntuación en la pantalla"""
     score_font = pg.font.SysFont(font, size)
     score_surface = score_font.render('Score : ' + str(score), True, color)
     score_rect = score_surface.get_rect(topleft=(10, 10))
     game_window.blit(score_surface, score_rect)
 
 def show_time(color, font, size, elapsed_time):
+    """Mostrar el tiempo transcurrido en la pantalla"""
     time_font = pg.font.SysFont(font, size)
     time_surface = time_font.render(f'Time : {elapsed_time:.2f}', True, color)
     time_rect = time_surface.get_rect(topright=(window_x - 10, 10))
     game_window.blit(time_surface, time_rect)
 
 def play_sound(sound, loop=False):
+    """Reproducir un sonido"""
     if loop:
         sound.play(loops=-1)
     else:
         sound.play()
 
 def stop_sound(sound):
+    """Detener un sonido"""
     sound.stop()
 
 def show_menu():
+    """Mostrar el menú principal del juego"""
     global max_score, max_time
-    play_sound(menu_sound, loop=True)  # Reproducir sonido de menú en bucle
-    game_window.fill(black)
+    play_sound(menu_sound, loop=True)
+    game_window.fill(bluish_black)
+
+    # Fuentes para el texto del menú
     title_font = pg.font.SysFont('times new roman', 80)
     score_font = pg.font.SysFont('times new roman', 30)
     time_font = pg.font.SysFont('times new roman', 30)
     instruction_font = pg.font.SysFont('times new roman', 25)
-    
+    version_font = pg.font.SysFont('times new roman', 20)
+
+    # Renderizar y posicionar el texto del menú
     title_surface = title_font.render('SnakePy', True, green)
     title_rect = title_surface.get_rect(center=(window_x / 2, window_y / 4))
     
@@ -87,13 +98,13 @@ def show_menu():
     instruction_surface = instruction_font.render('Press Q to exit or C to play', True, white)
     instruction_rect = instruction_surface.get_rect(center=(window_x / 2, window_y / 1.5))
 
-    version_font = pg.font.SysFont('times new roman', 20)
-    version_surface = version_font.render('Version 1.1.2', True, white)
+    version_surface = version_font.render('Version 1.1.3', True, white)
     version_rect = version_surface.get_rect(bottomleft=(10, window_y - 10))
 
     author_surface = version_font.render('by Hector Aliaga', True, white)
     author_rect = author_surface.get_rect(bottomright=(window_x - 10, window_y - 10))
 
+    # Dibujar el texto en la ventana del juego
     game_window.blit(title_surface, title_rect)
     game_window.blit(max_score_surface, max_score_rect)
     game_window.blit(max_time_surface, max_time_rect)
@@ -106,16 +117,21 @@ def show_menu():
     wait_for_input()
 
 def game_over():
+    """Mostrar la pantalla de Game Over"""
     global max_score, max_time, elapsed_time
-    stop_sound(game_sound)  # Detener música del juego
-    play_sound(game_over_sound)  # Reproducir sonido de game over
+    stop_sound(game_sound)
+    play_sound(game_over_sound)
+    
     end_time = tm.time()
     elapsed_time = end_time - start_time
-    game_window.fill(black)
+    game_window.fill(bluish_black)
+
+    # Fuentes para el texto de Game Over
     my_font_score = pg.font.SysFont('times new roman', 50)
     my_font_time = pg.font.SysFont('times new roman', 40)
     instruction_font = pg.font.SysFont('times new roman', 25)
-    
+
+    # Renderizar y posicionar el texto de Game Over
     game_over_surface = my_font_score.render('Your Score is : ' + str(score), True, red)
     game_over_rect = game_over_surface.get_rect(midtop=(window_x / 2, window_y / 4))
 
@@ -125,23 +141,26 @@ def game_over():
     instruction_surface = instruction_font.render('Press Q to exit or C to play again', True, white)
     instruction_rect = instruction_surface.get_rect(center=(window_x / 2, window_y / 1.5))
 
+    # Dibujar el texto en la ventana del juego
     game_window.blit(game_over_surface, game_over_rect)
     game_window.blit(time_surface, time_rect)
     game_window.blit(instruction_surface, instruction_rect)
     pg.display.flip()
     tm.sleep(1)
 
+    # Actualizar máximos
     if score > max_score:
         max_score = score
     if elapsed_time > max_time:
         max_time = elapsed_time
 
-    stop_sound(game_over_sound)  # Detener sonido de game over
-    play_sound(menu_sound, loop=True)  # Reproducir sonido de menú en bucle
+    stop_sound(game_over_sound)
+    play_sound(menu_sound, loop=True)
 
     wait_for_input()
 
 def wait_for_input():
+    """Esperar la entrada del usuario"""
     waiting = True
     while waiting:
         for event in pg.event.get():
@@ -150,16 +169,16 @@ def wait_for_input():
                 sys.exit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_c:
-                    stop_sound(menu_sound)  # Detener música del menú
+                    stop_sound(menu_sound)
                     waiting = False
-                    game_window.fill(black)
+                    game_window.fill(bluish_black)
                     pg.display.flip()
                 elif event.key == pg.K_q:
                     pg.quit()
                     sys.exit()
 
-# Bucle principal del juego
 def main():
+    """Bucle principal del juego"""
     global snake_position, snake_body, fruit_position, fruit_spawn, direction, change_to, score, start_time, last_score_sound
 
     show_menu()
@@ -174,7 +193,7 @@ def main():
     change_to = direction
     score = 0
 
-    play_sound(game_sound, loop=True)  # Reproducir música del juego en bucle
+    play_sound(game_sound, loop=True)
     start_time = tm.time()
     run_over = False
     while not run_over:
@@ -191,9 +210,9 @@ def main():
                 elif event.key == pg.K_RIGHT and direction != 'LEFT':
                     change_to = 'RIGHT'
                 elif event.key == pg.K_c:
-                    stop_sound(menu_sound)  # Detener música del menú
-                    stop_sound(game_sound)  # Detener música del juego
-                    stop_sound(game_over_sound)  # Detener música de game over
+                    stop_sound(menu_sound)
+                    stop_sound(game_sound)
+                    stop_sound(game_over_sound)
 
         # Actualización de la dirección
         direction = change_to
@@ -212,9 +231,9 @@ def main():
         snake_body.insert(0, list(snake_position))
         if snake_position == fruit_position:
             score += 10
-            play_sound(eat_sound)  # Reproducir sonido de comer
+            play_sound(eat_sound)
             fruit_spawn = False
-            last_score_sound = 0  # Reiniciar el estado del sonido de puntaje
+            last_score_sound = 0
         else:
             snake_body.pop()
 
@@ -225,7 +244,7 @@ def main():
         fruit_spawn = True
 
         # Renderización de la ventana del juego
-        game_window.fill(black)
+        game_window.fill(bluish_black)
         for pos in snake_body:
             pg.draw.rect(game_window, green, pg.Rect(pos[0], pos[1], 20, 20))
         pg.draw.rect(game_window, red, pg.Rect(fruit_position[0], fruit_position[1], 20, 20))
@@ -256,5 +275,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    pg.quit()
-    sys.exit()
